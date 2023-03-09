@@ -16,3 +16,5 @@ import pybora.pybora as pb
 ```
 
 We plan to register `pybora` on `PyPi` registry after releasing the paper in this project.
+
+In the `notebook` folder there is an example showing how to use trained emulators.
