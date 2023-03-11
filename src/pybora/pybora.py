@@ -7,27 +7,37 @@ jl.seval("using SimpleChains")
 jl.seval("using BSON")
 jl.seval("using Static")
 
-bora_compute_Xil = jl.seval('Bora.get_ξℓ')
-bora_compute_Xils = jl.seval('Bora.get_ξℓs')
-load_emu_jl = jl.seval('BSON.load')
+__bora_compute_Xil = jl.seval('Bora.get_ξℓ')
+__bora_compute_Xils = jl.seval('Bora.get_ξℓs')
+__bora_compute_bb = jl.seval('Bora.get_broadband')
+__load_emu_jl = jl.seval('BSON.load')
 
-def compute_Xils(*args):
-    my_list = [elem for elem in args]
-    if len(my_list) == 3:
-        for i in range(len(args)-1):
-            my_list[i] = jl.collect(my_list[i])
-    else:
-         for i in range(len(args)-2):
-            my_list[i] = jl.collect(my_list[i])
-    Pl = bora_compute_Xils(*my_list)
+def compute_Xils(cosmo, emu):
+    Pl = __bora_compute_Xils(jl.collect(cosmo), emu)
     return np.array(Pl)
 
+def compute_Xils_vec(cosmo, emu):
+    Pl = __bora_compute_Xils(jl.collect(np.transpose(cosmo)), emu)
+    return np.array(Pl)
+
+def compute_broadband(r, bbpar):
+    return np.array(__bora_compute_bb(r, jl.collect(bbpar)))
+
+def compute_broadband_vec(r, bbpar):
+    return np.array(__bora_compute_bb(r, jl.collect(np.transpose(bbpar))))
+
 def compute_Xil(cosmo, emu):
-    Xil = bora_compute_Xil(jl.collect(cosmo), emu)
+    Xil = __bora_compute_Xil(jl.collect(cosmo), emu)
     return np.array(Xil)
 
+def compute_Xils_broadband(cosmo, bbpar, emu):
+    return compute_Xils(cosmo, emu) + compute_broadband(emu.rgrid, bbpar)
+
+def compute_Xils_broadband_vec(cosmo, bbpar, emu):
+    return compute_Xils_vec(cosmo, emu) + compute_broadband_vec(emu.rgrid, bbpar)
+
 def load_emu(path):
-    loaded = load_emu_jl(path)
+    loaded = __load_emu_jl(path)
     emu = loaded["ξℓs"]
     return emu
 
